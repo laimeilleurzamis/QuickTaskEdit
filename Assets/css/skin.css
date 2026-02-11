@@ -1,0 +1,119 @@
+.task-board-icons {
+    display: none;
+}
+
+/* Alignement horizontal de tous les badges */
+.task-custom-footer-inline {
+    display: flex;
+    flex-wrap: nowrap; /* Force une seule ligne */
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    position: relative; /* Nécessaire pour le positionnement absolu du dropdown */
+}
+
+/* Style des badges (pillules blanches) */
+.badge-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.85em;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.badge-item i {
+    margin-right: 5px;
+    color: #718096;
+}
+
+/* Couleur spécifique pour le badge d'état */
+.status-column {
+    font-weight: bold;
+    color: #2d3748;
+}
+
+/* Style pour le lien généré par le modal helper */
+a.js-modal-medium {
+    text-decoration: none !important;
+    color: #2d3748 !important;
+}
+
+/* On applique le style de badge à l'élément généré */
+a.js-modal-medium .fa-th-list {
+    margin-right: 5px;
+    color: #718096;
+}
+
+/* Ajoutez cette règle pour que le lien ressemble à vos autres badges */
+a.js-modal-medium {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+a.js-modal-medium:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+/* Styles pour le dropdown de colonnes - très ciblé pour ne pas affecter le reste */
+.task-custom-footer-inline .dropdown {
+    position: static; /* Permet au dropdown de sortir du flux */
+    display: inline-block;
+}
+
+.task-custom-footer-inline .dropdown-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.task-custom-footer-inline .dropdown-menu {
+    display: none;
+    position: fixed; /* Position fixe pour sortir de tous les conteneurs */
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    min-width: 150px;
+    z-index: 9999; /* Très élevé pour passer au-dessus de tout */
+}
+
+.task-custom-footer-inline .dropdown.active .dropdown-menu {
+    display: block;
+}
+
+.task-custom-footer-inline .dropdown-menu li {
+    margin: 0;
+    padding: 0;
+}
+
+.task-custom-footer-inline .dropdown-menu li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    color: #2d3748;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.task-custom-footer-inline .dropdown-menu li a:hover {
+    background: #f7fafc;
+}
+
+.task-custom-footer-inline .dropdown-menu li a i.fa-check {
+    color: #48bb78;
+    margin-left: 8px;
+}
