@@ -17,12 +17,15 @@
                 <i class="fa fa-th-list"></i> <?= $this->text->e($task['column_name']) ?>
             </span>
             
-            <ul class="dropdown-menu column-dropdown-menu">
-                </ul>
+            <ul class="dropdown-menu column-dropdown-menu"></ul>
         </div>
     <?php endif ?>
 
     <?php if ($task['priority'] >= 0): ?>
+        <?php 
+            // Mapping numeric priorities to custom labels
+            $priority_labels = [0 => 'ok', 1 => 'info', 2 => 'warning', 3 => 'error']; 
+        ?>
         <div class="dropdown priority-dropdown" 
             data-project-id="<?= $task['project_id'] ?>"
             data-task-id="<?= $task['id'] ?>">
@@ -32,43 +35,15 @@
                 style="cursor: pointer;" 
                 data-current-priority="<?= $task['priority'] ?>"
                 onclick="event.preventDefault(); event.stopPropagation();">
-                <i class="fa fa-signal"></i> <?= $task['priority'] ?>
+                <i class="fa fa-signal"></i> <?= $priority_labels[$task['priority']] ?? $task['priority'] ?>
             </span>
             
             <ul class="dropdown-menu priority-menu">
-                <?php for ($i = 0; $i <= 3; $i++): ?>
+                <?php foreach ($priority_labels as $value => $label): ?>
                     <li>
-                        <a href="#" class="priority-change-link" data-priority="<?= $i ?>">
-                            Priorité <?= $i ?>
-                            <?php if ($task['priority'] == $i): ?>
-                                <i class="fa fa-check"></i>
-                            <?php endif ?>
-                        </a>
-                    </li>
-                <?php endfor ?>
-            </ul>
-        </div>
-    <?php endif ?>
-
-    <?php if (! empty($task['owner_id'])): ?>
-        <div class="dropdown assignee-dropdown" 
-            data-project-id="<?= $task['project_id'] ?>"
-            data-task-id="<?= $task['id'] ?>">
-            
-            <span class="badge-item assignee dropdown-toggle" 
-                title="Cliquez pour changer l'assigné" 
-                style="cursor: pointer;" 
-                data-current-assignee="<?= $task['owner_id'] ?>"
-                onclick="event.preventDefault(); event.stopPropagation();">
-                <i class="fa fa-user"></i> <?= $this->text->e($task['owner_id']) ?>
-            </span>
-
-            <ul class="dropdown-menu assignee-menu">
-                <?php foreach ($users_list as $user): ?>
-                    <li>
-                        <a href="#" class="assignee-change-link" data-user-id="<?= $user['id'] ?>">
-                            <?= $this->text->e($user['name']) ?>
-                            <?php if ($task['owner_id'] == $user['id']): ?>
+                        <a href="#" class="priority-change-link" data-priority="<?= $value ?>">
+                            <?= $label ?>
+                            <?php if ($task['priority'] == $value): ?>
                                 <i class="fa fa-check"></i>
                             <?php endif ?>
                         </a>
@@ -78,9 +53,37 @@
         </div>
     <?php endif ?>
 
-    <?php if (! empty($task['date_creation'])): ?>
-        <span class="badge-item date-creation" title="Date de création">
-            <i class="fa fa-calendar-plus-o"></i> <?= $this->dt->date($task['date_creation']) ?>
+    <?php 
+        // Get all users for the project instead of a global list
+        $available_users = $this->task->projectUserRoleModel->getAssignableUsersList($task['project_id']);
+    ?>
+    <div class="dropdown assignee-dropdown" 
+        data-project-id="<?= $task['project_id'] ?>"
+        data-task-id="<?= $task['id'] ?>">
+        
+        <span class="badge-item assignee dropdown-toggle" 
+            title="Cliquez pour changer l'assigné" 
+            style="cursor: pointer;" 
+            data-current-assignee="<?= $task['owner_id'] ?>"
+            onclick="event.preventDefault(); event.stopPropagation();">
+            <i class="fa fa-user"></i> <?= $task['assignee_name'] ?: $task['assignee_username'] ?: 'Non assigné' ?>
         </span>
-    <?php endif ?>
+
+        <ul class="dropdown-menu assignee-menu">
+            <li>
+                <a href="#" class="assignee-change-link" data-user-id="0">
+                </a>
+            </li>
+            <?php foreach ($available_users as $user_id => $user_name): ?>
+                <li>
+                    <a href="#" class="assignee-change-link" data-user-id="<?= $user_id ?>">
+                        <?= $this->text->e($user_name) ?>
+                        <?php if ($task['owner_id'] == $user_id): ?>
+                            <i class="fa fa-check"></i>
+                        <?php endif ?>
+                    </a>
+                </li>
+            <?php endforeach ?>
+        </ul>
+    </div>
 </div>

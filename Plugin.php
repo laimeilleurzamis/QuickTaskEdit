@@ -18,7 +18,8 @@ class Plugin extends Base
         // ROUTES - THESE ARE CRITICAL!
         $this->route->addRoute('/quicktaskedit/move', 'MoveTaskController', 'move', 'QuickTaskEdit');
         $this->route->addRoute('/quicktaskedit/update-priority', 'MoveTaskController', 'updatePriority', 'QuickTaskEdit');
-    }
+        $this->route->addRoute('/quicktaskedit/update-assignee', 'MoveTaskController', 'updateAssignee', 'QuickTaskEdit');
+    }    
 
     public function getPluginName()
     {

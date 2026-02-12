@@ -66,4 +66,27 @@ class MoveTaskController extends BaseController
             $this->response->json(['status' => 'error', 'message' => $e->getMessage()]);
         }
     }
+
+        public function updateAssignee()
+    {
+        ob_start();
+        try {
+            $this->checkCSRFParam();
+            $taskId = $this->request->getIntegerParam('task_id');
+            $ownerId = $this->request->getIntegerParam('user_id');
+
+            // Update task owner
+            $result = $this->taskModificationModel->update([
+                'id' => $taskId,
+                'owner_id' => $ownerId
+            ]);
+
+            if (ob_get_length()) ob_end_clean();
+            $this->response->json(['status' => $result ? 'success' : 'error']);
+        } catch (Exception $e) {
+            if (ob_get_length()) ob_end_clean();
+            $this->response->status(400);
+            $this->response->json(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
 }

@@ -148,4 +148,26 @@
             });
         }
     }, true);
+
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('.assignee-change-link');
+        if (link) {
+            e.preventDefault(); e.stopPropagation();
+            var dropdown = link.closest('.dropdown');
+            var taskId = dropdown.getAttribute('data-task-id');
+            var userId = link.getAttribute('data-user-id');
+            var csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+
+            dropdown.classList.remove('active');
+            if (!csrfToken) { alert("Erreur CSRF"); return; }
+
+            fetch('?controller=MoveTaskController&action=updateAssignee&plugin=QuickTaskEdit&task_id=' + taskId + '&user_id=' + userId + '&csrf_token=' + encodeURIComponent(csrfToken), {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') window.location.reload();
+                else alert("Erreur : " + data.message);
+            });
+        }
+    }, true);
 })();
