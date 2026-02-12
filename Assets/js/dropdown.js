@@ -1,6 +1,6 @@
 (function() {
     'use strict';
-    console.log('[QuickTaskEdit] Script chargé v9');
+    console.log('[QuickTaskEdit] Script chargé v10');
     
     function getColumnsFromBoard() {
         var columns = [];
@@ -40,6 +40,7 @@
         });
     }
     
+    // Fermer les menus au clic extérieur
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.dropdown')) {
             document.querySelectorAll('.task-custom-footer-inline .dropdown.active').forEach(function(d) {
@@ -48,17 +49,25 @@
         }
     });
 
+    // Gestion de l'ouverture des menus
     document.addEventListener('click', function(e) {
         var toggle = e.target.closest('.dropdown-toggle');
         if (toggle && toggle.closest('.task-custom-footer-inline')) {
             e.preventDefault(); e.stopPropagation();
             var dropdown = toggle.closest('.dropdown');
             var isActive = dropdown.classList.contains('active');
+            
+            // On ferme tous les autres menus ouverts
             document.querySelectorAll('.task-custom-footer-inline .dropdown.active').forEach(function(d) {
                 d.classList.remove('active');
             });
+
             if (!isActive) {
-                populateDropdown(dropdown, toggle.getAttribute('data-column-id'));
+                // MODIFICATION : On ne peuple dynamiquement que si c'est le menu des COLONNES
+                if (dropdown.classList.contains('column-dropdown')) {
+                    populateDropdown(dropdown, toggle.getAttribute('data-column-id'));
+                }
+                
                 var menu = dropdown.querySelector('.dropdown-menu');
                 var rect = toggle.getBoundingClientRect();
                 menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
@@ -68,55 +77,74 @@
         }
     }, true);
 
+    // Action : Changement de Colonne
     document.addEventListener('click', function(e) {
         var link = e.target.closest('.column-move-link');
         if (link) {
-            e.preventDefault(); e.stopPropagation();
+            e.preventDefault(); 
+            e.stopPropagation();
+
             var dropdown = link.closest('.dropdown');
             var taskId = dropdown.getAttribute('data-task-id');
             var targetColumnId = link.getAttribute('data-column-id');
-            
-            var csrfInput = dropdown.querySelector('input[name="csrf_token"]');
-            var csrfToken = csrfInput ? csrfInput.value : "";
-            
-            if (!csrfToken) {
-                var globalToken = document.querySelector('input[name="csrf_token"]');
-                csrfToken = globalToken ? globalToken.value : "";
-            }
+            var csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
 
-            console.log('[QuickTaskEdit] Task:', taskId, 'TargetCol:', targetColumnId, 'Token:', csrfToken ? 'Trouvé' : 'MANQUANT');
             dropdown.classList.remove('active');
-
-            if (!csrfToken) {
-                alert("Erreur : Impossible de trouver le jeton de sécurité (CSRF).");
-                return;
-            }
-            console.log('[QuickTaskEdit] Envoi Task:', taskId, 'vers Col:', targetColumnId);
+            if (!csrfToken) { alert("Erreur CSRF"); return; }
 
             var params = new URLSearchParams();
             params.append('task_id', taskId);
             params.append('column_id', targetColumnId);
-            params.append('csrf_token', csrfToken); // On le laisse dans le corps
+            params.append('csrf_token', csrfToken);
 
-            var url = '?controller=MoveTaskController&action=move&plugin=QuickTaskEdit&csrf_token=' + encodeURIComponent(csrfToken);
+            fetch('?controller=MoveTaskController&action=move&plugin=QuickTaskEdit&csrf_token=' + encodeURIComponent(csrfToken), {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') window.location.reload();
+                else alert("Erreur : " + data.message);
+            });
+        }
+    }, true);
+
+    // Action : Changement de Priorité
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('.priority-change-link');
+        if (link) {
+            e.preventDefault(); 
+            e.stopPropagation();
+            
+            var dropdown = link.closest('.dropdown');
+            var taskId = dropdown.getAttribute('data-task-id');
+            var newPriority = link.getAttribute('data-priority');
+            var csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+
+            dropdown.classList.remove('active');
+            if (!csrfToken) { alert("Erreur CSRF"); return; }
+
+            var url = '?controller=MoveTaskController' +
+                    '&action=updatePriority' +
+                    '&plugin=QuickTaskEdit' +
+                    '&task_id=' + taskId +
+                    '&priority=' + newPriority +
+                    '&csrf_token=' + encodeURIComponent(csrfToken);
 
             fetch(url, {
                 method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: params.toString()
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(function(response) {
-                return response.json().then(function(data) {
-                    if (response.ok && data.status === 'success') {
-                        window.location.reload();
-                    } else {
-                        console.error('[QuickTaskEdit] Erreur:', data);
-                        alert("Erreur : " + (data.message || "Token invalide (essayez de rafraîchir la page)"));
-                    }
-                });
+            .then(response => {
+                if (!response.ok) return response.json().then(data => { throw new Error(data.message || 'Erreur 400'); });
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') window.location.reload();
+                else alert("Erreur : " + data.message);
+            })
+            .catch(error => {
+                console.error('Update failed:', error);
+                alert(error.message);
             });
         }
     }, true);

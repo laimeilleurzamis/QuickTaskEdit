@@ -117,3 +117,7 @@ a.js-modal-medium:hover {
     color: #48bb78;
     margin-left: 8px;
 }
+
+.task-board-avatars {
+    display: none;
+}

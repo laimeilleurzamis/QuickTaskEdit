@@ -7,13 +7,18 @@ use Kanboard\Core\Plugin\Base;
 class Plugin extends Base
 {
     public function initialize()
-{
-    $this->template->hook->attach('template:board:task:footer', 'QuickTaskEdit:board/task_footer');
-    
-    $this->hook->on('template:layout:css', array('template' => 'plugins/QuickTaskEdit/Assets/css/skin.css'));
-    
-    $this->hook->on('template:layout:js', array('template' => 'plugins/QuickTaskEdit/Assets/js/dropdown.js'));
-}
+    {
+        // Hook for footer
+        $this->template->hook->attach('template:board:task:footer', 'QuickTaskEdit:board/task_footer');
+        
+        // CSS and JS
+        $this->hook->on('template:layout:css', array('template' => 'plugins/QuickTaskEdit/Assets/css/skin.css'));
+        $this->hook->on('template:layout:js', array('template' => 'plugins/QuickTaskEdit/Assets/js/dropdown.js'));
+        
+        // ROUTES - THESE ARE CRITICAL!
+        $this->route->addRoute('/quicktaskedit/move', 'MoveTaskController', 'move', 'QuickTaskEdit');
+        $this->route->addRoute('/quicktaskedit/update-priority', 'MoveTaskController', 'updatePriority', 'QuickTaskEdit');
+    }
 
     public function getPluginName()
     {
