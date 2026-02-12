@@ -62,16 +62,38 @@
                 d.classList.remove('active');
             });
 
-            if (!isActive) {
-                // MODIFICATION : On ne peuple dynamiquement que si c'est le menu des COLONNES
+        if (!isActive) {
+                // Peupler le menu colonnes si nécessaire
                 if (dropdown.classList.contains('column-dropdown')) {
                     populateDropdown(dropdown, toggle.getAttribute('data-column-id'));
                 }
                 
                 var menu = dropdown.querySelector('.dropdown-menu');
                 var rect = toggle.getBoundingClientRect();
-                menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-                menu.style.left = rect.left + 'px';
+                
+                // 1. Nettoyage : on enlève la classe "haut" par défaut et les styles manuels
+                menu.classList.remove('opens-up');
+                menu.style.top = '';  // On laisse le CSS gérer
+                menu.style.left = ''; // On laisse le CSS gérer
+
+                // 2. Mesure de la hauteur du menu
+                menu.style.visibility = 'hidden';
+                menu.style.display = 'block';
+                var menuHeight = menu.offsetHeight;
+                menu.style.display = '';
+                menu.style.visibility = '';
+
+                // 3. Détection : Est-ce qu'on dépasse en bas de l'écran ?
+                // window.innerHeight = hauteur de la fenêtre visible
+                // rect.bottom = position du bas du bouton
+                var spaceBelow = window.innerHeight - rect.bottom;
+
+                if (spaceBelow < menuHeight) {
+                    // Pas assez de place en bas -> On ajoute la classe pour ouvrir en haut
+                    menu.classList.add('opens-up');
+                }
+
+                // 4. On active (le CSS absolute fera le reste)
                 dropdown.classList.add('active');
             }
         }

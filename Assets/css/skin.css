@@ -67,7 +67,7 @@ a.js-modal-medium:hover {
 
 /* Styles pour le dropdown de colonnes - très ciblé pour ne pas affecter le reste */
 .task-custom-footer-inline .dropdown {
-    position: static; /* Permet au dropdown de sortir du flux */
+    position: relative; /* C'EST LA CLEF DU PROBLÈME (avant c'était static) */
     display: inline-block;
 }
 
@@ -78,16 +78,26 @@ a.js-modal-medium:hover {
 
 .task-custom-footer-inline .dropdown-menu {
     display: none;
-    position: fixed; /* Position fixe pour sortir de tous les conteneurs */
+    position: absolute; 
+    top: 100%;
+    left: 0;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     list-style: none;
-    margin: 0;
+    margin: 2px 0 0 0;
     padding: 4px 0;
     min-width: 150px;
-    z-index: 9999; /* Très élevé pour passer au-dessus de tout */
+    z-index: 1000;
+}
+
+.task-custom-footer-inline .dropdown-menu.opens-up {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 2px;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .task-custom-footer-inline .dropdown.active .dropdown-menu {
@@ -120,4 +130,10 @@ a.js-modal-medium:hover {
 
 .task-board-avatars {
     display: none;
+}
+
+/* Correction de l'ombre si le menu s'ouvre vers le haut */
+.task-custom-footer-inline .dropdown-menu.opens-up {
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1); /* Ombre vers le haut */
+    transform-origin: bottom center; /* L'animation d'ouverture partirait du bas */
 }

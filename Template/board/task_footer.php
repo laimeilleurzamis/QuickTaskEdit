@@ -54,7 +54,6 @@
     <?php endif ?>
 
     <?php 
-        // Get all users for the project instead of a global list
         $available_users = $this->task->projectUserRoleModel->getAssignableUsersList($task['project_id']);
     ?>
     <div class="dropdown assignee-dropdown" 
