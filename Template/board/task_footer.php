@@ -1,9 +1,15 @@
+<?php
+$columnsList = $this->task->projectModel->columnModel->getList($task['project_id']);
+$columnsJson = htmlspecialchars(json_encode($columnsList), ENT_QUOTES, 'UTF-8');
+?>
+
 <div class="task-custom-footer-inline" onclick="event.stopPropagation();">
     <?php if (! empty($task['column_name'])): ?>
         <div class="dropdown column-dropdown" 
             data-project-id="<?= $task['project_id'] ?>"
             data-task-id="<?= $task['id'] ?>"
-            data-swimlane-id="<?= $task['swimlane_id'] ?>">
+            data-swimlane-id="<?= $task['swimlane_id'] ?>"
+            data-columns='<?= $columnsJson ?>'>
             
             <div class="csrf-container" style="display:none;">
                 <?= $this->form->csrf() ?>

@@ -1,6 +1,9 @@
+if (!window.dropdownScriptLoaded) {
+window.dropdownScriptLoaded = true;
+
 (function() {
     'use strict';
-    console.log('[QuickTaskEdit] Script chargé v10');
+    console.log('[QuickTaskEdit] Dropdown script loaded');
 
     function refreshBoard(data) {
         var boardContainer = document.getElementById('board-container');
@@ -21,19 +24,26 @@
         }
     }
     
-    function getColumnsFromBoard() {
+    function getColumnsFromBoard(dropdown) {
+        var columnsData = dropdown.getAttribute('data-columns');
+        var columnsParsed = columnsData ? JSON.parse(columnsData) : [];
         var columns = [];
-        var boardColumns = document.querySelectorAll('.board-column-header');
-        boardColumns.forEach(function(header) {
-            var columnId = header.getAttribute('data-column-id');
-            var titleElement = header.querySelector('.board-column-title') || header.querySelector('span[title]') || header.querySelector('a');
-            if (columnId && titleElement) {
-                var title = titleElement.getAttribute('title') || titleElement.textContent.trim();
-                title = title.split('Cacher')[0].split('Créer')[0].trim();
-                columns.push({ id: columnId, title: title });
+        for (var c in columnsParsed) {
+            if (columnsParsed.hasOwnProperty(c)) {
+                columns.push({ id: c, title: columnsParsed[c] });
             }
-        });
-        return columns;
+        }
+        if (!columns) {
+            console.error('No columns data found on dropdown');
+            return [];
+        }
+        try {
+            return columns;
+        }
+        catch (e) {
+            console.error('Failed to parse columns data:', e);
+            return [];
+        }
     }
     
     function populateDropdown(dropdown, currentColumnId) {
@@ -228,3 +238,4 @@
         }
     }, true);
 })();
+}
