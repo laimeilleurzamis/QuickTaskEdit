@@ -36,35 +36,6 @@
     color: #2d3748;
 }
 
-/* Style pour le lien généré par le modal helper */
-a.js-modal-medium {
-    text-decoration: none !important;
-    color: #2d3748 !important;
-}
-
-/* On applique le style de badge à l'élément généré */
-a.js-modal-medium .fa-th-list {
-    margin-right: 5px;
-    color: #718096;
-}
-
-/* Ajoutez cette règle pour que le lien ressemble à vos autres badges */
-a.js-modal-medium {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 0.85em;
-    display: inline-flex;
-    align-items: center;
-    transition: background 0.2s;
-}
-
-a.js-modal-medium:hover {
-    background: #f7fafc;
-    border-color: #cbd5e0;
-}
-
 /* Styles pour le dropdown de colonnes - très ciblé pour ne pas affecter le reste */
 .task-custom-footer-inline .dropdown {
     position: relative; /* C'EST LA CLEF DU PROBLÈME (avant c'était static) */

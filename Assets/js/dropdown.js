@@ -1,6 +1,25 @@
 (function() {
     'use strict';
     console.log('[QuickTaskEdit] Script chargé v10');
+
+    function refreshBoard(data) {
+        var boardContainer = document.getElementById('board-container');
+        if (boardContainer && data) {
+            // On remplace le contenu par le nouveau HTML reçu
+            boardContainer.outerHTML = data;
+            
+            // On réinitialise les composants Kanboard (Drag & Drop, etc.)
+            if (window.KB) {
+                window.KB.render();
+            }
+            
+            // Optionnel : Afficher un message de succès silencieux ou masquer un loader
+            console.log('[QuickTaskEdit] Board rafraîchi avec succès');
+        } else {
+            // Si on ne trouve pas le conteneur, on reload par sécurité
+            window.location.reload();
+        }
+    }
     
     function getColumnsFromBoard() {
         var columns = [];
@@ -106,10 +125,14 @@
             e.preventDefault(); 
             e.stopPropagation();
 
-            var dropdown = link.closest('.dropdown');
-            var taskId = dropdown.getAttribute('data-task-id');
-            var targetColumnId = link.getAttribute('data-column-id');
-            var csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+        var dropdown = link.closest('.dropdown');
+        var taskId = dropdown.getAttribute('data-task-id');
+        var targetColumnId = link.getAttribute('data-column-id');
+        var swimlaneId = dropdown.getAttribute('data-swimlane-id');
+        var projectId = dropdown.getAttribute('data-project-id');
+        var csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+
+        dropdown.classList.remove('active');
 
             dropdown.classList.remove('active');
             if (!csrfToken) { alert("Erreur CSRF"); return; }
@@ -118,15 +141,27 @@
             params.append('task_id', taskId);
             params.append('column_id', targetColumnId);
             params.append('csrf_token', csrfToken);
-
-            fetch('?controller=MoveTaskController&action=move&plugin=QuickTaskEdit&csrf_token=' + encodeURIComponent(csrfToken), {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params.toString()
-            }).then(response => response.json()).then(data => {
-                if (data.status === 'success') window.location.reload();
-                else alert("Erreur : " + data.message);
-            });
+            params.append('swimlane_id', swimlaneId);
+            params.append('project_id', projectId);
+            
+        fetch('?controller=MoveTaskController&action=move&plugin=QuickTaskEdit&csrf_token=' + encodeURIComponent(csrfToken), {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+        }).then(response => response.json()).then(data => {
+            if (data.status === 'success') {
+                // Utilisation de la fonction interne de Kanboard pour rafraîchir le tableau
+                if (window.KB && window.KB.board) {
+                    // Cette fonction force Kanboard à recalculer et réafficher les colonnes
+                    window.KB.board.refresh(); 
+                } else {
+                    // Fallback si KB n'est pas dispo
+                    window.location.reload();
+                }
+            } else {
+                alert("Erreur : " + data.message);
+            }
+        });
         }
     }, true);
 
