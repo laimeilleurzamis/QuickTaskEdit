@@ -48,7 +48,7 @@ window.dropdownScriptLoaded = true;
     
     function populateDropdown(dropdown, currentColumnId) {
         var menu = dropdown.querySelector('.dropdown-menu');
-        var columns = getColumnsFromBoard();
+        var columns = getColumnsFromBoard(dropdown);
         if (columns.length === 0) return;
         menu.innerHTML = '';
         columns.forEach(function(column) {
