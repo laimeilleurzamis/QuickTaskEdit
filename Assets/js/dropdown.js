@@ -8,18 +8,15 @@ window.dropdownScriptLoaded = true;
     function refreshBoard(data) {
         var boardContainer = document.getElementById('board-container');
         if (boardContainer && data) {
-            // On remplace le contenu par le nouveau HTML reçu
+            // Replace content of the board with the new HTML from the server                
             boardContainer.outerHTML = data;
             
-            // On réinitialise les composants Kanboard (Drag & Drop, etc.)
+            // Refresh KB components if available
             if (window.KB) {
                 window.KB.render();
             }
-            
-            // Optionnel : Afficher un message de succès silencieux ou masquer un loader
             console.log('[QuickTaskEdit] Board rafraîchi avec succès');
         } else {
-            // Si on ne trouve pas le conteneur, on reload par sécurité
             window.location.reload();
         }
     }
@@ -69,7 +66,7 @@ window.dropdownScriptLoaded = true;
         });
     }
     
-    // Fermer les menus au clic extérieur
+    // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.dropdown')) {
             document.querySelectorAll('.task-custom-footer-inline .dropdown.active').forEach(function(d) {
@@ -78,7 +75,7 @@ window.dropdownScriptLoaded = true;
         }
     });
 
-    // Gestion de l'ouverture des menus
+    // Manage dropdown opening with dynamic positioning
     document.addEventListener('click', function(e) {
         var toggle = e.target.closest('.dropdown-toggle');
         if (toggle && toggle.closest('.task-custom-footer-inline')) {
@@ -86,13 +83,13 @@ window.dropdownScriptLoaded = true;
             var dropdown = toggle.closest('.dropdown');
             var isActive = dropdown.classList.contains('active');
             
-            // On ferme tous les autres menus ouverts
+            // Close all dropdowns first
             document.querySelectorAll('.task-custom-footer-inline .dropdown.active').forEach(function(d) {
                 d.classList.remove('active');
             });
 
         if (!isActive) {
-                // Peupler le menu colonnes si nécessaire
+                // Populate dropdown
                 if (dropdown.classList.contains('column-dropdown')) {
                     populateDropdown(dropdown, toggle.getAttribute('data-column-id'));
                 }
@@ -100,35 +97,30 @@ window.dropdownScriptLoaded = true;
                 var menu = dropdown.querySelector('.dropdown-menu');
                 var rect = toggle.getBoundingClientRect();
                 
-                // 1. Nettoyage : on enlève la classe "haut" par défaut et les styles manuels
+                // Clean previous state
                 menu.classList.remove('opens-up');
-                menu.style.top = '';  // On laisse le CSS gérer
-                menu.style.left = ''; // On laisse le CSS gérer
+                menu.style.top = '';
+                menu.style.left = '';
 
-                // 2. Mesure de la hauteur du menu
+                // Mesure height
                 menu.style.visibility = 'hidden';
                 menu.style.display = 'block';
                 var menuHeight = menu.offsetHeight;
                 menu.style.display = '';
                 menu.style.visibility = '';
 
-                // 3. Détection : Est-ce qu'on dépasse en bas de l'écran ?
-                // window.innerHeight = hauteur de la fenêtre visible
-                // rect.bottom = position du bas du bouton
+                // Detect if there's enough space below, otherwise open upwards
                 var spaceBelow = window.innerHeight - rect.bottom;
 
                 if (spaceBelow < menuHeight) {
-                    // Pas assez de place en bas -> On ajoute la classe pour ouvrir en haut
                     menu.classList.add('opens-up');
                 }
-
-                // 4. On active (le CSS absolute fera le reste)
                 dropdown.classList.add('active');
             }
         }
     }, true);
 
-    // Action : Changement de Colonne
+    // Column move
     document.addEventListener('click', function(e) {
         var link = e.target.closest('.column-move-link');
         if (link) {
@@ -160,13 +152,16 @@ window.dropdownScriptLoaded = true;
             body: params.toString()
         }).then(response => response.json()).then(data => {
             if (data.status === 'success') {
-                // Utilisation de la fonction interne de Kanboard pour rafraîchir le tableau
                 if (window.KB && window.KB.board) {
-                    // Cette fonction force Kanboard à recalculer et réafficher les colonnes
                     window.KB.board.refresh(); 
                 } else {
-                    // Fallback si KB n'est pas dispo
-                    window.location.reload();
+                    var currentUrl = window.location.origin + window.location.pathname;
+                    var params = new URLSearchParams(window.location.search);
+
+                    if (window.KB && window.KB.modal && window.KB.modal.isOpen()) {
+                        params.set('open_task_id', taskId);
+                    }
+                    window.location.href = currentUrl + '?' + params.toString();
                 }
             } else {
                 alert("Erreur : " + data.message);
@@ -175,7 +170,7 @@ window.dropdownScriptLoaded = true;
         }
     }, true);
 
-    // Action : Changement de Priorité
+    // Priority change
     document.addEventListener('click', function(e) {
         var link = e.target.closest('.priority-change-link');
         if (link) {
@@ -206,7 +201,14 @@ window.dropdownScriptLoaded = true;
                 return response.json();
             })
             .then(data => {
-                if (data.status === 'success') window.location.reload();
+                if (data.status === 'success'){
+                    var currentUrl = window.location.origin + window.location.pathname;
+                    var params = new URLSearchParams(window.location.search);
+                    if (window.KB && window.KB.modal && window.KB.modal.isOpen()) {
+                        params.set('open_task_id', taskId);
+                    }
+                    window.location.href = currentUrl + '?' + params.toString();
+                }
                 else alert("Erreur : " + data.message);
             })
             .catch(error => {
@@ -216,6 +218,7 @@ window.dropdownScriptLoaded = true;
         }
     }, true);
 
+    // Assignee change
     document.addEventListener('click', function(e) {
         var link = e.target.closest('.assignee-change-link');
         if (link) {
@@ -232,7 +235,14 @@ window.dropdownScriptLoaded = true;
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             }).then(response => response.json()).then(data => {
-                if (data.status === 'success') window.location.reload();
+                if (data.status === 'success') {
+                    var currentUrl = window.location.origin + window.location.pathname;
+                    var params = new URLSearchParams(window.location.search);
+                    if (window.KB && window.KB.modal && window.KB.modal.isOpen()) {
+                        params.set('open_task_id', taskId);
+                    }
+                    window.location.href = currentUrl + '?' + params.toString();
+                }
                 else alert("Erreur : " + data.message);
             });
         }
